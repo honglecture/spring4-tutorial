@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.1.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.1.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.1.xsd">
+
+	<!-- dao패키지 모두 설정 @리포지토리 설정한 것만 찾음 -->
+	<context:component-scan base-package="com.tutorial.web.dao" />
+	
+	<!-- 1. 데이터소스 객체 만들기 -->
+	<bean id="ds" class="org.apache.commons.dbcp.BasicDataSource">
+	     <!-- db연결 설정 -->
+         <property name="driverClassName" value="com.microsoft.sqlserver.jdbc.SQLServerDriver" />
+         <property name="url" value="jdbc:sqlserver://211.238.142.251:1433;databaseName=lecture" />
+         <property name="username" value="sist" />
+         <property name="password" value="dclass" />
+         <!-- 커넥션풀 설정 -->
+         <property name="removeAbandoned" value="true" />
+         <property name="initialSize" value="20" />
+         <property name="maxActive" value="30" />    
+	</bean>
+
+	<bean id="ssf" class="org.mybatis.spring.SqlSessionFactoryBean"><!-- 프로퍼티에 2개 들어가야 함 configLocation하고 dataSource -->
+		<property name="configLocation" value="classpath:com/tutorial/web/dao/mybatis/mapper/sql-map-config.xml" />
+		<property name="dataSource" ref="ds" /><!-- 데이터소스는 위에서 만듦 -->
+	</bean>
+	
+	<!-- xml설정파일 여기에 있다. -->
+	<bean id="sqlSession" class="org.mybatis.spring.SqlSessionTemplate">
+		<constructor-arg index="0" ref="ssf" /><!-- 생성자에 SqlSessionFactoryBean 를 넣어야 함 그래서 위에서 만듦 -->
+	</bean>
+
+	<!-- 트랜잭션관리 bean -->
+	<bean id="transactionManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="ds" /><!-- 데이터소스 알려줘야 한다. -->
+	</bean>
+
+	<tx:annotation-driven transaction-manager="transactionManager" />
+	<!--transactionManager 을 가지고 트랜잭션 관리 -->
+
+</beans>
